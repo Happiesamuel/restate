@@ -22,7 +22,7 @@ module.exports = {
         primary: {
           100: "#0061ff0a",
           200: "#0061ff1a",
-          300: "#0061ff2a",
+          300: "#0061ff",
         },
         accent: {
           100: "#fbfbfd",
