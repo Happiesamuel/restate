@@ -72,7 +72,7 @@ export async function logout() {
 export async function getCurrentUser() {
   try {
     const res = await account.get();
-    if (!res.$id) {
+    if (res.$id) {
       const userAvatar = avatar.getInitials(res.name);
       return {
         ...res,
