@@ -11,14 +11,14 @@ import {
 
 export const config = {
   platform: "com.jsm.restate",
-  endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT!,
-  projectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID!,
+  endpoint: process.env.EXPO_PUBLIC_APPWRITE_ENDPOINT,
+  projectId: process.env.EXPO_PUBLIC_APPWRITE_PROJECT_ID,
 };
 
 const client = new Client()
-  .setEndpoint(config.endpoint)
-  .setProject(config.projectId)
-  .setPlatform(config.platform);
+  .setEndpoint(config.endpoint!)
+  .setProject(config.projectId!)
+  .setPlatform(config.platform!);
 
 // const account = new Account(client);
 export const avatar = new Avatars(client);
@@ -34,19 +34,20 @@ export async function login() {
       OAuthProvider.Google,
       redirectUri
     );
-    if (!res) throw new Error("Failed to login");
+    if (!res) throw new Error("Failed to login,first");
 
     const browserRes = await WebBrowser.openAuthSessionAsync(
       res.toString(),
       redirectUri
     );
-    if (browserRes.type !== "success") throw new Error("Failed to login!");
+    if (browserRes.type !== "success")
+      throw new Error("Failed to login!,second");
 
     const url = new URL(browserRes.url);
 
     const secret = url.searchParams.get("secret")?.toString();
     const userId = url.searchParams.get("userId")?.toString();
-    if (!secret || !userId) throw new Error("Failed to login");
+    if (!secret || !userId) throw new Error("Failed to login,third");
 
     const session = await account.createSession(userId!, secret!);
 
@@ -71,6 +72,7 @@ export async function logout() {
 
 export async function getCurrentUser() {
   try {
+    console.log(client);
     const res = await account.get();
     if (res.$id) {
       const userAvatar = avatar.getInitials(res.name);
@@ -80,7 +82,7 @@ export async function getCurrentUser() {
       };
     }
   } catch (error) {
-    console.log(error);
+    console.log(error, "sam");
     return false;
   }
 }
