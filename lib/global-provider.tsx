@@ -25,7 +25,6 @@ const GlobalProvider = ({ children }: { children: React.ReactNode }) => {
     fn: getCurrentUser,
   });
   const isLoggedin = !!user && typeof user === "object" && "$id" in user;
-  console.log(JSON.stringify(user, null, 2));
   const normalizedUser: User | null =
     isLoggedin && user && typeof user === "object" ? (user as User) : null;
   return (

@@ -5,7 +5,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AppLayout() {
   const { loading, isLoggedin } = useGlobalContext();
-  console.log(loading, isLoggedin);
 
   if (loading) {
     return (
