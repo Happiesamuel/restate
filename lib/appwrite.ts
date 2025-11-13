@@ -16,6 +16,10 @@ interface ItemProp extends Models.Document {
   rating: number;
   price: number;
   address: string;
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  type: string;
 }
 
 export const config = {
@@ -150,5 +154,20 @@ export async function getProperties({
   } catch (error) {
     console.log(error);
     return [];
+  }
+}
+
+export async function getPropertyById({ id }: { id: string }) {
+  try {
+    const result = await databases.getDocument(
+      config.databaseId!,
+      config.propertiesCollectionId!,
+      id
+    );
+
+    return result as unknown as ItemProp;
+  } catch (error) {
+    console.log(error);
+    return null;
   }
 }
