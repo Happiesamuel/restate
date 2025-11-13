@@ -1,18 +1,72 @@
 import { Card, FeaturedCard } from "@/components/Cards";
 import Filters from "@/components/Filters";
+import NoResults from "@/components/NoResults";
 import Search from "@/components/Search";
 import icons from "@/constants/icons";
 import images from "@/constants/images";
+import { getLatestProperties, getProperties } from "@/lib/appwrite";
 import { useGlobalContext } from "@/lib/global-provider";
-import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
+import { useAppwrite } from "@/lib/useAppwrite";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Index() {
   const { user } = useGlobalContext();
+  const params = useLocalSearchParams<{ query?: string; filter?: string }>();
+  const { data: latestProperties, loading: latestPropertiesLoading } =
+    useAppwrite({ fn: getLatestProperties });
+  const {
+    data: properties,
+    loading,
+    refetch,
+  } = useAppwrite({
+    fn: getProperties,
+    params: { filter: params.filter!, query: params.query!, limit: 6 },
+    skip: true,
+  });
+
+  useEffect(
+    function () {
+      refetch({
+        filter: params.filter!,
+        query: params.query!,
+        limit: 6,
+      });
+    },
+    [params.query, params.filter]
+  );
+
+  function handleCardPress(id: string) {
+    router.push(`/properties/${id}`);
+  }
   return (
     <SafeAreaView className="bg-white h-full">
       <FlatList
-        data={[1, 2, 3, 5]}
+        data={properties}
+        renderItem={({ item }) => (
+          <Card onPress={() => handleCardPress(item.$id)} item={item} />
+        )}
+        ListEmptyComponent={
+          loading ? (
+            <ActivityIndicator size="large" className="text-primary-300 mt-5" />
+          ) : (
+            <NoResults />
+          )
+        }
+        keyExtractor={(item) => item.$id.toString()}
+        numColumns={2}
+        contentContainerClassName="pb-32"
+        columnWrapperClassName="flex gap-5 px-5"
+        showsVerticalScrollIndicator={false}
         ListHeaderComponent={() => (
           <View className="px-5 flex flex-1 ">
             <View className="flex flex-row items-center justify-between mt-5">
@@ -43,15 +97,27 @@ export default function Index() {
                 </TouchableOpacity>
               </View>
 
-              <FlatList
-                data={[1, 2, 3, 4]}
-                horizontal
-                renderItem={({ item }) => <FeaturedCard />}
-                keyExtractor={(item) => item.toString()}
-                bounces={false}
-                showsHorizontalScrollIndicator={false}
-                contentContainerClassName="flex gap-5 mt-5"
-              />
+              {latestPropertiesLoading ? (
+                <ActivityIndicator size="large" className="text-primary-300" />
+              ) : latestProperties?.length === 0 || !latestProperties ? (
+                <NoResults />
+              ) : (
+                <FlatList
+                  data={latestProperties}
+                  horizontal
+                  renderItem={({ item }) => (
+                    <FeaturedCard
+                      item={item}
+                      onPress={() => handleCardPress(item.$id)}
+                    />
+                  )}
+                  ListEmptyComponent={NoResults}
+                  keyExtractor={(item) => item.$id.toString()}
+                  bounces={false}
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerClassName="flex gap-5 mt-5"
+                />
+              )}
             </View>
 
             <View className="flex flex-row items-center justify-between">
@@ -67,12 +133,6 @@ export default function Index() {
             <Filters />
           </View>
         )}
-        keyExtractor={(item) => item.toString()}
-        numColumns={2}
-        contentContainerClassName="pb-32"
-        columnWrapperClassName="flex gap-5 px-5"
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => <Card />}
       />
     </SafeAreaView>
   );

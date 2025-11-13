@@ -5,9 +5,18 @@ import {
   Avatars,
   Client,
   Databases,
+  Models,
   OAuthProvider,
   Query,
 } from "react-native-appwrite";
+
+interface ItemProp extends Models.Document {
+  name: string;
+  image: string;
+  rating: number;
+  price: number;
+  address: string;
+}
 
 export const config = {
   platform: "com.jsm.restate",
@@ -99,7 +108,7 @@ export async function getLatestProperties() {
       config.propertiesCollectionId!,
       [Query.orderAsc("$createdAt"), Query.limit(5)]
     );
-    return res.documents;
+    return res.documents as unknown as ItemProp[];
   } catch (error) {
     console.log(error);
     return [];
@@ -115,7 +124,7 @@ export async function getProperties({
   limit?: number;
 }) {
   try {
-    const buildQuery = [Query.orderDesc("$createdtAt")];
+    const buildQuery = [Query.orderDesc("$createdAt")];
     if (filter && filter !== "All") {
       buildQuery.push(Query.equal("type", filter));
     }
@@ -137,7 +146,7 @@ export async function getProperties({
       config.propertiesCollectionId!,
       buildQuery
     );
-    return res.documents;
+    return res.documents as unknown as ItemProp[];
   } catch (error) {
     console.log(error);
     return [];
